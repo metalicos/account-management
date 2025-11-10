@@ -1,0 +1,341 @@
+{
+	"info": {
+		"_postman_id": "account-management-api",
+		"name": "Account Management API",
+		"description": "API для управління користувацькими акаунтами з JWT автентифікацією",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set(\"userId\", response.id);",
+									"    pm.environment.set(\"userEmail\", response.email);",
+									"    console.log(\"User registered successfully. User ID:\", response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Іван\",\n    \"lastName\": \"Петренко\",\n    \"middleName\": \"Олександрович\",\n    \"gender\": \"MALE\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"email\": \"ivan.petrenko@example.com\",\n    \"phoneNumber\": \"+380501234567\",\n    \"password\": \"SecurePass123!\",\n    \"address\": {\n        \"country\": \"Україна\",\n        \"state\": \"Київська область\",\n        \"city\": \"Київ\",\n        \"postalCode\": \"01001\",\n        \"street\": \"Хрещатик\",\n        \"building\": \"1\",\n        \"entrance\": \"A\",\n        \"floor\": \"5\",\n        \"apartment\": \"25\",\n        \"intercomCode\": \"1234\"\n    },\n    \"roles\": [\"USER_COMMUNITY\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Реєстрація нового користувача"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set(\"accessToken\", response.accessToken);",
+									"    pm.environment.set(\"refreshToken\", response.refreshToken);",
+									"    pm.environment.set(\"tokenType\", response.tokenType);",
+									"    console.log(\"Login successful. Tokens saved.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{userEmail}}\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Авторизація користувача та отримання JWT токенів"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set(\"accessToken\", response.accessToken);",
+									"    pm.environment.set(\"refreshToken\", response.refreshToken);",
+									"    console.log(\"Token refreshed successfully.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Оновлення access token за допомогою refresh token"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints для автентифікації та авторизації"
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Top 10 Most Accessed Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/top",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"top"
+							]
+						},
+						"description": "Отримати топ 10 найчастіше використовуваних користувачів (кешовано на 10 хвилин)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users?page=0&size=20&sort=createdAt,desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Номер сторінки (починається з 0)"
+								},
+								{
+									"key": "size",
+									"value": "20",
+									"description": "Розмір сторінки"
+								},
+								{
+									"key": "sort",
+									"value": "createdAt,desc",
+									"description": "Сортування (field,direction)"
+								}
+							]
+						},
+						"description": "Отримати всіх користувачів з пагінацією"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Отримати користувача за ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (Admin Only)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Іван\",\n    \"lastName\": \"Петренко\",\n    \"middleName\": \"Олександрович\",\n    \"gender\": \"MALE\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"phoneNumber\": \"+380501234567\",\n    \"address\": {\n        \"country\": \"Україна\",\n        \"state\": \"Київська область\",\n        \"city\": \"Київ\",\n        \"postalCode\": \"01001\",\n        \"street\": \"Хрещатик\",\n        \"building\": \"1\",\n        \"entrance\": \"A\",\n        \"floor\": \"5\",\n        \"apartment\": \"25\",\n        \"intercomCode\": \"1234\"\n    },\n    \"roles\": [\"USER_PROFESSIONAL\", \"USER_PLATINUM\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Оновити інформацію про користувача (тільки для ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (Admin Only)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Видалити користувача (soft delete, тільки для ADMIN)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints для управління користувачами"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
+

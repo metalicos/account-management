@@ -16,10 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     
     boolean existsByEmail(String email);
-    
-    @Query(value = "SELECT u FROM User u ORDER BY u.accessCount DESC")
-    List<User> findTop10ByAccessCountOrderByAccessCountDesc(Pageable pageable);
-    
+
     @Query("SELECT u FROM User u")
     Page<User> findAllActive(Pageable pageable);
 }

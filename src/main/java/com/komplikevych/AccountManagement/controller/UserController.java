@@ -12,25 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
 
-    @GetMapping("/top")
-    public ResponseEntity<List<UserResponse>> getTop10MostAccessedUsers() {
-        List<UserResponse> users = userService.getTop10MostAccessedUsers();
-        return ResponseEntity.ok(users);
-    }
-
     @GetMapping
-    public ResponseEntity<Page<UserResponse>> getAllUsers(
-            @PageableDefault(size = 20) Pageable pageable
-    ) {
+    public ResponseEntity<Page<UserResponse>> getAllUsers(@PageableDefault(size = 20) Pageable pageable) {
         Page<UserResponse> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
     }
@@ -43,10 +32,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UserUpdateRequest request
-    ) {
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
+                                                   @Valid @RequestBody UserUpdateRequest request) {
         UserResponse user = userService.updateUser(id, request);
         return ResponseEntity.ok(user);
     }

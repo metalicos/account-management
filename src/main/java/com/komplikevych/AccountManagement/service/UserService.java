@@ -21,7 +21,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,31 +28,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
 
-    @Cacheable(value = "topUsers", key = "'top10'")
-    public List<UserResponse> getTop10MostAccessedUsers() {
-        log.info("Fetching top 10 most accessed users from database");
-        List<User> users = userRepository.findTop10ByAccessCountOrderByAccessCountDesc(
-                org.springframework.data.domain.PageRequest.of(0, 10)
-        );
-        return users.stream()
-                .map(userMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#id", unless = "#result == null")
     public UserResponse getUserById(@NonNull Long id) {
+        log.debug("Fetching user from database with id: {}", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
-        user.incrementAccessCount();
-        userRepository.save(user);
-        evictTopUsersCache();
-        
         return userMapper.toResponse(user);
     }
 
@@ -64,19 +48,18 @@ public class UserService {
     }
 
     @Transactional
-    @CacheEvict(value = "topUsers", allEntries = true)
+    @CacheEvict(value = {"users"}, key = "#id")
     public UserResponse updateUser(@NonNull Long id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         updateUserFields(user, request);
         User savedUser = userRepository.save(user);
-        
         return userMapper.toResponse(savedUser);
     }
 
     @Transactional
-    @CacheEvict(value = "topUsers", allEntries = true)
+    @CacheEvict(value = {"users"}, key = "#id")
     public void deleteUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -91,14 +74,8 @@ public class UserService {
         if (request.gender() != null) user.setGender(request.gender());
         if (request.dateOfBirth() != null) user.setDateOfBirth(request.dateOfBirth());
         if (request.phoneNumber() != null) user.setPhoneNumber(request.phoneNumber());
-
-        if (request.address() != null) {
-            updateAddress(user, request.address());
-        }
-
-        if (request.roles() != null && !request.roles().isEmpty()) {
-            updateRoles(user, request.roles());
-        }
+        if (request.address() != null) updateAddress(user, request.address());
+        if (request.roles() != null && !request.roles().isEmpty()) updateRoles(user, request.roles());
     }
 
     private void updateAddress(User user, AddressRequest addressRequest) {
@@ -107,7 +84,6 @@ public class UserService {
             address = new Address();
             user.setAddress(address);
         }
-
         if (addressRequest.country() != null) address.setCountry(addressRequest.country());
         if (addressRequest.state() != null) address.setState(addressRequest.state());
         if (addressRequest.city() != null) address.setCity(addressRequest.city());
@@ -121,22 +97,14 @@ public class UserService {
     }
 
     private void updateRoles(User user, Set<Role> roles) {
-        userRoleRepository.deleteByUser_Id(user.getId());
+        userRoleRepository.deleteUserRoleByUser_Id(user.getId());
         user.getRoles().clear();
 
         Set<UserRole> userRoles = roles.stream()
-                .map(role -> UserRole.builder()
-                        .user(user)
-                        .role(role)
-                        .build())
+                .map(role -> UserRole.builder().user(user).role(role).build())
                 .collect(Collectors.toSet());
 
         user.getRoles().addAll(userRoles);
-    }
-
-    @CacheEvict(value = "topUsers", allEntries = true)
-    private void evictTopUsersCache() {
-        // Cache eviction is handled by annotation
     }
 }
 

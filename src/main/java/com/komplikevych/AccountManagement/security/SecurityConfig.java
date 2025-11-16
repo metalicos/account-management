@@ -59,6 +59,11 @@ public class SecurityConfig {
                 "http://beinjava.tech",
                 "https://cyberdone.com.ua",
                 "http://cyberdone.com.ua",
+                "https://marketllm.netlify.app",
+                "http://marketllm.netlify.app",
+                "https://romanticquestions.netlify.app",
+                "http://romanticquestions.netlify.app",
+                "https://*.netlify.app",
                 "https://*.onrender.com",
                 "http://localhost:*",
                 "http://127.0.0.1:*"

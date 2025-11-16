@@ -4,7 +4,6 @@ import com.komplikevych.AccountManagement.dto.request.RegistrationRequest;
 import com.komplikevych.AccountManagement.dto.response.AuthResponse;
 import com.komplikevych.AccountManagement.dto.response.UserResponse;
 import com.komplikevych.AccountManagement.mapper.UserMapper;
-import com.komplikevych.AccountManagement.model.entity.Address;
 import com.komplikevych.AccountManagement.model.entity.User;
 import com.komplikevych.AccountManagement.model.entity.UserRole;
 import com.komplikevych.AccountManagement.repository.UserRepository;
@@ -19,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.komplikevych.AccountManagement.model.enums.Role;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -40,36 +39,17 @@ public class AuthService {
             throw new IllegalArgumentException("User with email " + request.email() + " already exists");
         }
 
-        Address address = Address.builder()
-                .country(request.address().country())
-                .state(request.address().state())
-                .city(request.address().city())
-                .postalCode(request.address().postalCode())
-                .street(request.address().street())
-                .building(request.address().building())
-                .entrance(request.address().entrance())
-                .floor(request.address().floor())
-                .apartment(request.address().apartment())
-                .intercomCode(request.address().intercomCode())
-                .build();
-
         User user = User.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
-                .middleName(request.middleName())
                 .gender(request.gender())
                 .dateOfBirth(request.dateOfBirth())
                 .email(request.email())
-                .phoneNumber(request.phoneNumber())
                 .password(passwordEncoder.encode(request.password()))
-                .address(address)
                 .build();
 
-        Set<UserRole> userRoles = request.roles().stream()
-                .map(role -> UserRole.builder()
-                        .user(user)
-                        .role(role)
-                        .build())
+        Set<UserRole> userRoles = Set.of(Role.USER_COMMUNITY).stream()
+                .map(role -> UserRole.builder().user(user).role(role).build())
                 .collect(Collectors.toSet());
 
         user.setRoles(userRoles);

@@ -42,6 +42,25 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String email) {
+        log.debug("Fetching current user from database with email: {}", email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional
+    @CacheEvict(value = {"users"}, allEntries = true)
+    public UserResponse updateCurrentUser(String email, UserUpdateRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        updateUserFields(user, request);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponse(savedUser);
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         return userRepository.findAllActive(pageable)
                 .map(userMapper::toResponse);

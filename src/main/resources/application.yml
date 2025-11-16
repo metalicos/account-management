@@ -15,6 +15,9 @@ jwt:
   access-token-expiration: 3600000
   refresh-token-expiration: 86400000
 
+google:
+  client-id: 1059865245376-6v056guihgp340evlpcro1dnr6po06ac.apps.googleusercontent.com
+
 logging:
   level:
     com.komplikevych.AccountManagement: INFO

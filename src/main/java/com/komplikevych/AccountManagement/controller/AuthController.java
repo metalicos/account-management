@@ -1,5 +1,6 @@
 package com.komplikevych.AccountManagement.controller;
 
+import com.komplikevych.AccountManagement.dto.request.GoogleLoginRequest;
 import com.komplikevych.AccountManagement.dto.request.LoginRequest;
 import com.komplikevych.AccountManagement.dto.request.RefreshTokenRequest;
 import com.komplikevych.AccountManagement.dto.request.RegistrationRequest;
@@ -33,6 +34,12 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = authService.refreshToken(request.refreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        AuthResponse response = authService.loginWithGoogle(request.idToken());
         return ResponseEntity.ok(response);
     }
 }

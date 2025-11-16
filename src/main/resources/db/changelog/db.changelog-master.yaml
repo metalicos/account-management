@@ -179,3 +179,16 @@ databaseChangeLog:
             referencedTableName: users
             referencedColumnNames: id
 
+  - changeSet:
+      id: 4
+      author: system
+      changes:
+        - dropNotNullConstraint:
+            tableName: users
+            columnName: first_name
+            columnDataType: VARCHAR(100)
+        - dropNotNullConstraint:
+            tableName: users
+            columnName: last_name
+            columnDataType: VARCHAR(100)
+

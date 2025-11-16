@@ -16,7 +16,7 @@ jwt:
   refresh-token-expiration: 86400000
 
 google:
-  client-id: 1059865245376-6v056guihgp340evlpcro1dnr6po06ac.apps.googleusercontent.com
+  client-id: 1059865245376-lva4cp3hcvsslk4vcqghadh7c9c4t817.apps.googleusercontent.com
 
 logging:
   level:

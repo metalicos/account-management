@@ -28,7 +28,6 @@ public class AuthService {
 
     @Transactional
     public UserResponse register(RegistrationRequest request) {
-        // Check within transaction to avoid race conditions
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateEmailException("User with email " + request.email() + " already exists");
         }
@@ -46,7 +45,6 @@ public class AuthService {
         }
     }
 
-    @Transactional(readOnly = true)
     public AuthResponse login(String email, String password) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)

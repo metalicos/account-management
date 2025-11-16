@@ -56,7 +56,6 @@ public class UserService {
         return userMapper.toResponse(savedUser);
     }
 
-    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id", unless = "#result == null")
     public UserResponse getUserById(@NonNull Long id) {
         log.debug("Fetching user from database with id: {}", id);
@@ -65,7 +64,7 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    @Transactional(readOnly = true)
+
     public UserResponse getCurrentUser(String email) {
         log.debug("Fetching current user from database with email: {}", email);
         User user = userRepository.findByEmail(email)
@@ -84,7 +83,7 @@ public class UserService {
         return userMapper.toResponse(savedUser);
     }
 
-    @Transactional(readOnly = true)
+
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         return userRepository.findAllActive(pageable)
                 .map(userMapper::toResponse);

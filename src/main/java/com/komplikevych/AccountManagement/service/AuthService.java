@@ -3,15 +3,18 @@ package com.komplikevych.AccountManagement.service;
 import com.komplikevych.AccountManagement.dto.request.RegistrationRequest;
 import com.komplikevych.AccountManagement.dto.response.AuthResponse;
 import com.komplikevych.AccountManagement.dto.response.UserResponse;
+import com.komplikevych.AccountManagement.exception.DuplicateEmailException;
 import com.komplikevych.AccountManagement.repository.UserRepository;
 import com.komplikevych.AccountManagement.security.CustomUserDetailsService;
 import com.komplikevych.AccountManagement.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,15 +26,24 @@ public class AuthService {
     private final CustomUserDetailsService userDetailsService;
     private final UserService userService;
 
+    @Transactional
     public UserResponse register(RegistrationRequest request) {
+        // Check within transaction to avoid race conditions
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("User with email " + request.email() + " already exists");
+            throw new DuplicateEmailException("User with email " + request.email() + " already exists");
         }
 
-        UserResponse response = userService.createUser(request);
-
-        log.info("User registered successfully with email: {}", request.email());
-        return response;
+        try {
+            UserResponse response = userService.createUser(request);
+            log.info("User registered successfully with email: {}", request.email());
+            return response;
+        } catch (DataIntegrityViolationException e) {
+            // Handle database constraint violations (e.g., unique constraint on email)
+            if (e.getMessage() != null && (e.getMessage().contains("email") || e.getMessage().contains("duplicate"))) {
+                throw new DuplicateEmailException("User with email " + request.email() + " already exists");
+            }
+            throw e;
+        }
     }
 
     public AuthResponse login(String email, String password) {

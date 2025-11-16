@@ -57,6 +57,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "https://beinjava.tech",
                 "http://beinjava.tech",
+                "https://*.onrender.com",
                 "http://localhost:*",
                 "http://127.0.0.1:*"
         ));

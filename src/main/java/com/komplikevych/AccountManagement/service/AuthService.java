@@ -3,9 +3,6 @@ package com.komplikevych.AccountManagement.service;
 import com.komplikevych.AccountManagement.dto.request.RegistrationRequest;
 import com.komplikevych.AccountManagement.dto.response.AuthResponse;
 import com.komplikevych.AccountManagement.dto.response.UserResponse;
-import com.komplikevych.AccountManagement.mapper.UserMapper;
-import com.komplikevych.AccountManagement.model.entity.User;
-import com.komplikevych.AccountManagement.model.entity.UserRole;
 import com.komplikevych.AccountManagement.repository.UserRepository;
 import com.komplikevych.AccountManagement.security.CustomUserDetailsService;
 import com.komplikevych.AccountManagement.security.jwt.JwtTokenProvider;
@@ -14,49 +11,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.komplikevych.AccountManagement.model.enums.Role;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
-    private final UserMapper userMapper;
+    private final UserService userService;
 
-    @Transactional
     public UserResponse register(RegistrationRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("User with email " + request.email() + " already exists");
         }
 
-        User user = User.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .gender(request.gender())
-                .dateOfBirth(request.dateOfBirth())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .build();
-
-        Set<UserRole> userRoles = Set.of(Role.USER_COMMUNITY).stream()
-                .map(role -> UserRole.builder().user(user).role(role).build())
-                .collect(Collectors.toSet());
-
-        user.setRoles(userRoles);
-        User savedUser = userRepository.save(user);
+        UserResponse response = userService.createUser(request);
 
         log.info("User registered successfully with email: {}", request.email());
-        return userMapper.toResponse(savedUser);
+        return response;
     }
 
     public AuthResponse login(String email, String password) {
@@ -97,4 +72,3 @@ public class AuthService {
                 .build();
     }
 }
-

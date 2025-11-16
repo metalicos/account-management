@@ -1,6 +1,7 @@
 package com.komplikevych.AccountManagement.service;
 
 import com.komplikevych.AccountManagement.dto.request.AddressRequest;
+import com.komplikevych.AccountManagement.dto.request.RegistrationRequest;
 import com.komplikevych.AccountManagement.dto.request.UserUpdateRequest;
 import com.komplikevych.AccountManagement.dto.response.UserResponse;
 import com.komplikevych.AccountManagement.exception.ResourceNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,28 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public UserResponse createUser(RegistrationRequest request) {
+        User user = User.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .gender(request.gender())
+                .dateOfBirth(request.dateOfBirth())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .build();
+
+        Set<UserRole> userRoles = Set.of(Role.USER_COMMUNITY).stream()
+                .map(role -> UserRole.builder().user(user).role(role).build())
+                .collect(Collectors.toSet());
+
+        user.setRoles(userRoles);
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toResponse(savedUser);
+    }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id", unless = "#result == null")
@@ -126,4 +150,3 @@ public class UserService {
         user.getRoles().addAll(userRoles);
     }
 }
-

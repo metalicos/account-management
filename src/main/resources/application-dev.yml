@@ -1,6 +1,3 @@
-# Dev profile configuration - PostgreSQL database
-# Make sure PostgreSQL is running and database 'accountdb' exists
-# To create database: CREATE DATABASE accountdb;
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/data_management_db

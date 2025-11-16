@@ -1,5 +1,3 @@
-# Local profile configuration - H2 in-memory database
-# Use this profile for local development without external database setup
 spring:
   datasource:
     url: jdbc:h2:mem:accountdb

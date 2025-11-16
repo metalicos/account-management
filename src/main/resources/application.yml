@@ -1,11 +1,8 @@
 spring:
   application:
     name: AccountManagement
-  # Active profile: 'local' for H2 in-memory database, 'dev' for PostgreSQL
-  # To change profile, use: --spring.profiles.active=dev
-  # Or set environment variable: SPRING_PROFILES_ACTIVE=dev
   profiles:
-    active: dev
+    active: prod
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml

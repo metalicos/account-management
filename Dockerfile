@@ -44,7 +44,4 @@ ENV SPRING_PROFILES_ACTIVE=prod \
     JAVA_OPTS="-Xms512m -Xmx512m" \
     TZ=UTC
 
-HEALTHCHECK --interval=30s --timeout=15s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]

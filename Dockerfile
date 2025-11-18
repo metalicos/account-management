@@ -15,7 +15,7 @@ RUN chmod +x gradlew && \
     ./gradlew build -x test --no-daemon
 
 RUN mkdir -p /app/extracted && \
-    java -Djarmode=layertools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --destination /app/extracted
+    java -Djarmode=tools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --layers --destination /app/extracted
 
 FROM eclipse-temurin:21-jre-alpine
 

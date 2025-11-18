@@ -60,11 +60,21 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
+      - name: Debug - List files
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Listing files:"
+          ls -la
+          echo "Checking for Dockerfile:"
+          ls -la Dockerfile || echo "Dockerfile not found in root"
+          echo "Checking AccountManagement directory:"
+          ls -la AccountManagement/ || echo "AccountManagement directory not found"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./AccountManagement
-          file: ./AccountManagement/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push != false) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

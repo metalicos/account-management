@@ -13,7 +13,7 @@ RUN ./gradlew build -x test --no-daemon --parallel --build-cache && \
     mkdir -p /app/extracted && \
     java -Djarmode=tools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --layers --destination /app/extracted
 
-FROM eclipse-temurin:21-jre-minimal-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 RUN apk add --no-cache tzdata curl && \
     rm -rf /var/cache/apk/* && \

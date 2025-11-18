@@ -3,38 +3,27 @@ FROM gradle:8.10-jdk21-alpine AS build
 WORKDIR /app
 
 COPY gradle gradle
-COPY gradlew .
-COPY build.gradle .
-COPY settings.gradle .
-
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
+COPY gradlew build.gradle settings.gradle ./
+RUN chmod +x gradlew
 
 COPY src src
 
-RUN chmod +x gradlew && \
-    ./gradlew build -x test --no-daemon
-
-RUN mkdir -p /app/extracted && \
+RUN ./gradlew build -x test --no-daemon && \
+    mkdir -p /app/extracted && \
     java -Djarmode=tools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --layers --destination /app/extracted
 
 FROM eclipse-temurin:21-jre-alpine
 
-RUN apk add --no-cache \
-    tzdata \
-    curl \
-    && rm -rf /var/cache/apk/*
-
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN apk add --no-cache tzdata curl && \
+    rm -rf /var/cache/apk/* && \
+    addgroup -S spring && \
+    adduser -S spring -G spring
 
 WORKDIR /app
 
-COPY --from=build /app/extracted/dependencies/ ./
-COPY --from=build /app/extracted/spring-boot-loader/ ./
-COPY --from=build /app/extracted/snapshot-dependencies/ ./
-COPY --from=build /app/extracted/application/ ./
+COPY --from=build /app/extracted/ ./
 
-RUN mkdir -p /app/logs && \
-    chown -R spring:spring /app
+RUN mkdir -p /app/logs && chown -R spring:spring /app
 
 USER spring:spring
 

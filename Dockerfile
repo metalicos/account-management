@@ -4,15 +4,16 @@ WORKDIR /app
 
 COPY gradle gradle
 COPY gradlew build.gradle settings.gradle ./
-RUN chmod +x gradlew
+
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 
 COPY src src
 
-RUN ./gradlew build -x test --no-daemon && \
+RUN ./gradlew build -x test --no-daemon --parallel --build-cache && \
     mkdir -p /app/extracted && \
     java -Djarmode=tools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --layers --destination /app/extracted
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-minimal-alpine
 
 RUN apk add --no-cache tzdata curl && \
     rm -rf /var/cache/apk/* && \

@@ -22,7 +22,10 @@ RUN apk add --no-cache tzdata curl && \
 
 WORKDIR /app
 
-COPY --from=build /app/extracted/ ./
+COPY --from=build /app/extracted/dependencies/ ./
+COPY --from=build /app/extracted/spring-boot-loader/ ./
+COPY --from=build /app/extracted/snapshot-dependencies/ ./
+COPY --from=build /app/extracted/application/ ./
 
 RUN mkdir -p /app/logs && chown -R spring:spring /app
 

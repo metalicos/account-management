@@ -10,8 +10,8 @@ RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 COPY src src
 
 RUN ./gradlew build -x test --no-daemon --parallel --build-cache && \
-    mkdir -p /app/extracted && \
-    java -Djarmode=tools -jar $(find build/libs/ -name "*.jar" ! -name "*-plain.jar") extract --layers --destination /app/extracted
+    JAR_FILE=$(find build/libs/ -name "*.jar" ! -name "*-plain.jar" | head -n 1) && \
+    cp "$JAR_FILE" /app/app.jar
 
 FROM eclipse-temurin:21-jre-alpine
 
@@ -22,10 +22,7 @@ RUN apk add --no-cache tzdata curl && \
 
 WORKDIR /app
 
-COPY --from=build /app/extracted/dependencies/ ./
-COPY --from=build /app/extracted/spring-boot-loader/ ./
-COPY --from=build /app/extracted/snapshot-dependencies/ ./
-COPY --from=build /app/extracted/application/ ./
+COPY --from=build /app/app.jar app.jar
 
 RUN mkdir -p /app/logs && chown -R spring:spring /app
 
@@ -40,4 +37,4 @@ ENV SPRING_PROFILES_ACTIVE=prod \
 HEALTHCHECK --interval=30s --timeout=2s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

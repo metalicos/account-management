@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/account-management/api/v1.0/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
